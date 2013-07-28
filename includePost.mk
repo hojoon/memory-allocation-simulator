@@ -86,7 +86,7 @@ $(TARGET_NAMES) : $(LIB_FULL_NAME) $(DEPEND_LIBS)
 
 ifneq ($(MAKECMDGOALS), clean)
 ifneq ($(MAKECMDGOALS), dep)
-ifneq ($(MAKECMDGOALS), clealall)
+ifneq ($(MAKECMDGOALS), cleanall)
 ifneq ($(MAKECMDGOALS), depall)
 ifneq ($(strip $(LIB_SRCS) $(TARGET_SRCS)),)
 -include $(DEPEND_FILE)

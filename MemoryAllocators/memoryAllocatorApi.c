@@ -17,7 +17,7 @@ struct MemoryContext {
 
 static struct MemoryAllocator *memoryAllocatorSelected;
 
-void *MA_GeneralMalloc(unsigned long size) {
+static void *MA_GeneralMalloc(unsigned long size) {
 	void *retval;
 	
 	retval=(void*)malloc(size);
@@ -25,7 +25,7 @@ void *MA_GeneralMalloc(unsigned long size) {
 	return retval;
 }
 
-void MA_GeneralFree(void *memory) {
+static void MA_GeneralFree(void *memory) {
 	free(memory);
 }
 

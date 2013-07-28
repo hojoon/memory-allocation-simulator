@@ -1,60 +1,38 @@
+# makefile
 
-CC = gcc
-AR = ar
-RANLIB = ranlib
-RM = rm
-MKDIR = mkdir
+# to debug makefile, remark below linen
+Q=@
 
-ifeq ($(RELEASE), 1)
-OBJS_DIR = Release
-DBG_FLAG = -O2 -DNDEBUG
-else
-OBJS_DIR = Debug
-DBG_FLAG = -g -O0 -DDEBUG
+ifeq ($PROJ_ROOT,)
+#error PROJ_ROOT is not set. Please set PROJ_ROOT to build this project and libraries before building.
 endif
 
-DEPEND_FILE = $(OBJS_DIR)/depend_file
+include $(PROJ_ROOT)/includePre.mk
 
+
+# library name. library will be build with the name, lib$(LIB_NAME).a
+LIB_NAME = 
+
+# list of library source files
+LIB_SRCS = 
+
+# source files for application
 TARGET_SRCS = main.c
-TARGET_OBJS = $(TARGET_SRCS:%.c=$(OBJS_DIR)/%.o)
-TARGET_NAMES = $(TARGET_SRCS:%.c=$(OBJS_DIR)/%)
 
-LIBS += 
-LIB_DIRS = -L.
+# library files with paths to be added to dependency rule
+DEPEND_LIBS = MemoryAllocators/libMemoryAllocators.a
 
-TARGET = memtest
+# system library files
+# LIBS += -lSystemLibrary -lMyLibrary
+LIBS += -lMemoryAllocators
 
-.SUFFIXES : .c .o
+# relative paths of library directories if library files are not in current directory
+# LIB_DIRS += -LLibDirectory1 -LLibDirectory2 -LSubDirectory1
+LIB_DIRS += -LMemoryAllocators
 
-all: $(LIB_FULL_NAME) $(TARGET_NAMES)
+# sub directories to be built before
+# SUB_DIRS = SubDirectory1 SubDirectory2
+SUB_DIRS = MemoryAllocators
 
-$(LIB_FULL_NAME): $(LIB_OBJS)
-	$(AR) rcv $@ $(LIB_OBJS)
-	$(RANLIB) $@
 
-$(OBJS_DIR)/%.o: %.c
-	@`[ -d $(OBJS_DIR) ] || $(MKDIR) $(OBJS_DIR)`
-	$(CC) $(CFLAGS) $(DBG_FLAGS) -c $< -o $@
-
-.SECONDEXPANSION:
-$(TARGET_NAMES): $$@.o
-	$(CC) -o $@ $< $(LIB_DIRS) $(LIBS)
-
-clean:
-	$(RM) -fr $(OBJS_DIR)
-
-dep:
-	@`[ -d $(OBJS_DIR) ] || $(MKDIR) $(OBJS_DIR)`
-	@$(RM) -f $(DEPEND_FILE)
-	@for FILE in $(LIB_SRCS:%.c=%) $(TARGET_SRCS:%.c=%); do \
-		$(CC) -MM -MT $(OBJS_DIR)/$$FILE.o $$FILE.c >> $(DEPEND_FILE); \
-	done
-
-ifneq ($(MAKECMDGOALS), clean)
-ifneq ($(MAKECMDGOALS), depend)
-ifneq ($(strip $(LIB_SRCS) $(TARGET_SRCS)),)
--include $(DEPEND_FILE)
-endif
-endif
-endif
-
+include $(PROJ_ROOT)/includePost.mk
