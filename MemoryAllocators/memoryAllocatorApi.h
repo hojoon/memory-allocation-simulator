@@ -7,7 +7,7 @@ typedef enum {
 	MA_INVALID_PARAM,
 	MA_NOT_INITIALIZED,
 	MA_INVALID_MEMORY_ALLOCATOR,
-	MA_BASE_MEMORY_FULL,
+	MA_SYSTEM_MEMORY_FULL,
 	MA_MEMORY_FULL,
 	MA_NOT_SUPPORTED,
 	
@@ -28,6 +28,11 @@ extern MA_ERROR MA_GetFreeMemorySize(void *context, unsigned long *memorySize);
 extern MA_ERROR MA_GetAllocatedMemorySize(void *context, unsigned long *memorySize);
 extern MA_ERROR MA_GetTotalRequestedMemorySize(void *context, unsigned long *memorySize);
 extern MA_ERROR MA_GetMaximumAvailableMemorySize(void *context, unsigned long *memorySize);
+extern MA_ERROR MA_Ioctl(unsigned long command, void *context,
+		void *param1, void *param2, void *param3, void *param4);
+
+extern void *MA_GeneralMalloc(unsigned long size);
+extern void MA_GeneralFree(void *memory);
 
 #endif	/* _MEMORY_ALLOCATOR_API_H_ */
 

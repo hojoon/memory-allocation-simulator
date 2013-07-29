@@ -1,6 +1,6 @@
 # makefile
 
-# to debug makefile, remark below linen
+# to debug makefile, remark below line or use "make Q="
 Q=@
 
 ifeq ($PROJ_ROOT,)
@@ -10,7 +10,7 @@ endif
 include $(PROJ_ROOT)/includePre.mk
 
 
-# library name. library will be build with the name, lib$(LIB_NAME).a
+# library name. library will be built with the name, lib$(LIB_NAME).a
 LIB_NAME = 
 
 # list of library source files
@@ -22,13 +22,13 @@ TARGET_SRCS = main.c
 # library files with paths to be added to dependency rule
 DEPEND_LIBS = MemoryAllocators/libMemoryAllocators.a
 
-# system library files
+# library files
 # LIBS += -lSystemLibrary -lMyLibrary
-LIBS += -lMemoryAllocators
+LIBS += -lMemoryAllocators -lSystemDefaultMemoryAllocator
 
 # relative paths of library directories if library files are not in current directory
 # LIB_DIRS += -LLibDirectory1 -LLibDirectory2 -LSubDirectory1
-LIB_DIRS += -LMemoryAllocators
+LIB_DIRS += -LMemoryAllocators -LMemoryAllocators/SystemDefault
 
 # sub directories to be built before
 # SUB_DIRS = SubDirectory1 SubDirectory2

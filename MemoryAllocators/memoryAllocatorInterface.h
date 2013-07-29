@@ -6,6 +6,8 @@
 // memoryAllocatorApi.h	: error constant
 
 struct MemoryAllocator {
+	unsigned char name[30];
+	
 	MA_ERROR (*InitializeMemoryPool)(void **context,
 			void *memoryPool, unsigned long memoryPoolSize,
 			unsigned long minimumAllocationSize);
@@ -16,6 +18,9 @@ struct MemoryAllocator {
 	MA_ERROR (*GetAllocatedMemorySize)(void *context, unsigned long *memorySize);
 	MA_ERROR (*GetTotalRequestedMemorySize)(void *context, unsigned long *memorySize);
 	MA_ERROR (*GetMaximumAvailableMemorySize)(void *context, unsigned long *memorySize);
+
+	MA_ERROR (*Ioctl)(unsigned long command, void *context,
+			void *param1, void *param2, void *param3, void *param4);
 };
 
 #endif	/* _MEMORY_ALLOCATOR_INTERFACE_H_ */

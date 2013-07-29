@@ -1,8 +1,11 @@
 
+#include <stdio.h>
 #include <stdlib.h>
 
 #include "memoryAllocatorApi.h"
 #include "memoryAllocatorInterface.h"
+
+#include "SystemDefault/systemDefaultMemoryAllocator.h"
 
 struct MemoryContext {
 	struct MemoryAllocator *memoryAllocator;
@@ -17,7 +20,13 @@ struct MemoryContext {
 
 static struct MemoryAllocator *memoryAllocatorSelected;
 
-static void *MA_GeneralMalloc(unsigned long size) {
+static struct MemoryAllocator *memoryAllocators[]={
+	&systemDefaultMemoryAllocator,
+	
+	0
+};
+
+void *MA_GeneralMalloc(unsigned long size) {
 	void *retval;
 	
 	retval=(void*)malloc(size);
@@ -25,14 +34,28 @@ static void *MA_GeneralMalloc(unsigned long size) {
 	return retval;
 }
 
-static void MA_GeneralFree(void *memory) {
+void MA_GeneralFree(void *memory) {
 	free(memory);
 }
 
 MA_ERROR MA_InitializeMemoryAllocation(void) {
 	MA_ERROR retval;
+	int i;
+	int memoryAllocatorsCount=sizeof(memoryAllocators)/sizeof(struct MemoryAllocator);
 
 	memoryAllocatorSelected=0;
+	
+	for (i=0; i<memoryAllocatorsCount; i++) {
+		if (memoryAllocators[i]) {
+			if (memoryAllocators[i]->name) {
+				printf("Memory allocator, %s is added.\r\n",memoryAllocators[i]->name);
+			} else {
+				printf("Memory allocator with no name is added.\r\n");
+			}
+		} else {
+			printf("Check the list, memoryAllocators!!!\r\n");
+		}
+	}
 	
 	retval=MA_NO_ERROR;
 	return retval;
@@ -84,7 +107,7 @@ MA_ERROR MA_InitializeMemoryPool(void **context,
 					MA_GeneralFree(memoryContext);
 				}
 			} else {
-				retval=MA_BASE_MEMORY_FULL;
+				retval=MA_SYSTEM_MEMORY_FULL;
 			}
 		} else {
 			retval=MA_NOT_INITIALIZED;
@@ -209,6 +232,17 @@ MA_ERROR MA_GetMaximumAvailableMemorySize(void *context, unsigned long *memorySi
 		} else {
 			retval=MA_NOT_SUPPORTED;
 		}	
+	}
+	return retval;
+}
+
+MA_ERROR MA_Ioctl(unsigned long command, void *context,
+		void *param1, void *param2, void *param3, void *param4) {
+	MA_ERROR retval=MA_INVALID_PARAM;
+
+	if (command) {
+	
+	
 	}
 	return retval;
 }
