@@ -6,6 +6,7 @@
 #include "memoryAllocatorInterface.h"
 
 #include "SystemDefault/systemDefaultMemoryAllocator.h"
+#include "Simple/simpleMemoryAllocator.h"
 
 struct MemoryContext {
 	struct MemoryAllocator *memoryAllocator;
@@ -22,6 +23,7 @@ static struct MemoryAllocator *memoryAllocatorSelected;
 
 static struct MemoryAllocator *memoryAllocators[]={
 	&systemDefaultMemoryAllocator,
+	&simpleMemoryAllocator,
 	
 	0
 };
