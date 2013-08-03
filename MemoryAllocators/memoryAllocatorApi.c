@@ -80,6 +80,25 @@ MA_ERROR MA_SetMemoryAllocator(struct MemoryAllocator *memoryAllocator) {
 	return retval;
 }
 
+MA_ERROR MA_SetMemoryAllocatorByName(unsigned char *name) {
+	MA_ERROR retval=MA_INVALID_PARAM;
+
+	if (name) {
+		int i;
+		for (i=0; i<10; i++) {
+			if (memoryAllocators[i]==0) {
+				break;
+			}
+			printf("%d %s\r\n",i,memoryAllocators[i]->name);
+			if (strcmp(name, memoryAllocators[i]->name)==0) {
+				retval=MA_SetMemoryAllocator(memoryAllocators[i]);
+				break;
+			}
+		};
+	}
+	return retval;
+}
+
 MA_ERROR MA_InitializeMemoryPool(void **context,
 		void *memoryPool, unsigned long memoryPoolSize,
 		unsigned long minimumAllocationSize) {

@@ -23,6 +23,7 @@ static void *SimpleMalloc(struct SimpleMemoryAllocatorContext *context,
 		int j;
 		unsigned long neededBlocks=(size+context->minimumAllocationSize-1)
 				/context->minimumAllocationSize;
+
 		for (i=0; i<context->blockNumber; i++) {
 			if (blockTable[i*2]==0) {	// not allocated
 				for (j=0; j<neededBlocks; j++) {
@@ -42,6 +43,7 @@ static void *SimpleMalloc(struct SimpleMemoryAllocatorContext *context,
 					context->requestedSize+=size;
 					context->allocatedSize+=
 							neededBlocks*context->minimumAllocationSize;
+					break;
 				} else {
 					i=j;
 				}
@@ -201,6 +203,7 @@ static MA_ERROR Simple_GetFreeMemorySize(void *context, unsigned long *memorySiz
 	MA_ERROR retval=MA_INVALID_PARAM;
 	
 	*memorySize=SimpleGetFreeMemorySize(context);
+	retval=MA_NO_ERROR;
 	
 	return retval;
 }
@@ -209,6 +212,7 @@ static MA_ERROR Simple_GetAllocatedMemorySize(void *context, unsigned long *memo
 	MA_ERROR retval=MA_INVALID_PARAM;
 	
 	*memorySize=SimpleGetAllocatedMemorySize(context);
+	retval=MA_NO_ERROR;
 	
 	return retval;
 }
@@ -216,7 +220,8 @@ static MA_ERROR Simple_GetAllocatedMemorySize(void *context, unsigned long *memo
 static MA_ERROR Simple_GetTotalRequestedMemorySize(void *context, unsigned long *memorySize) {
 	MA_ERROR retval=MA_INVALID_PARAM;
 	
-	*memorySize=SimpleGetRequestedMemorySize(context);
+	*memorySize=SimpleGetTotalRequestedMemorySize(context);
+	retval=MA_NO_ERROR;
 	
 	return retval;
 }
@@ -225,6 +230,7 @@ static MA_ERROR Simple_GetMaximumAvailableMemorySize(void *context, unsigned lon
 	MA_ERROR retval=MA_INVALID_PARAM;
 	
 	*memorySize=SimpleGetMaximumAvailableMemorySize(context);
+	retval=MA_NO_ERROR;
 	
 	return retval;
 }
@@ -236,9 +242,9 @@ struct MemoryAllocator simpleMemoryAllocator={
 	Simple_DeinitializeMemoryPool,
 	Simple_AllocateMemory,
 	Simple_FreeMemory,
-	0,	// GetFreeMemorySize,
-	0,	// GetAllocatedMemorySize
-	0,	// GetAllocatedMemorySize
-	0,	// GetTotalRequestedMemorySize
-	0	// Ioctl
+	Simple_GetFreeMemorySize,
+	Simple_GetAllocatedMemorySize,
+	Simple_GetTotalRequestedMemorySize,
+	Simple_GetMaximumAvailableMemorySize,
+	0	// Simple_Ioctl
 };

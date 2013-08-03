@@ -5,7 +5,7 @@
 // required headers
 // memoryAllocatorInterface.h
 
-extern struct MemoryAllocator *simpleMemoryAllocator;
+extern struct MemoryAllocator simpleMemoryAllocator;
 
 #endif	/* _SIMPLE_MEMORY_ALLOCATOR_H_ */
 

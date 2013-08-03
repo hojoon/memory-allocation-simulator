@@ -96,7 +96,7 @@ struct MemoryAllocator systemDefaultMemoryAllocator={
 	SD_FreeMemory,
 	0,	// GetFreeMemorySize,
 	0,	// GetAllocatedMemorySize
-	0,	// GetAllocatedMemorySize
 	0,	// GetTotalRequestedMemorySize
+	0,	// GetMaximumAvailableMemorySize
 	0	// Ioctl
 };
