@@ -20,7 +20,7 @@ LIB_SRCS =
 TARGET_SRCS = main.c
 
 # library files with paths to be added to dependency rule
-DEPEND_LIBS = MemoryAllocators/libMemoryAllocators.a
+DEPEND_LIBS = MemoryAllocators/libMemoryAllocators.a MemoryAllocators/Simple/libSimpleMemoryAllocator.a
 
 # library files
 # LIBS += -lSystemLibrary -lMyLibrary
