@@ -3,14 +3,16 @@
 #include "../memoryAllocatorInterface.h"
 
 struct SimpleMemoryAllocatorContext {
-	unsigned long count;
+	unsigned long count;	// context creation count
 	void *memoryPool;
 	unsigned long memoryPoolSize;
+	unsigned long *blockTable;
+	unsigned long blockNumber;		// number of segmented memory blocks
+	unsigned char *memoryBase;
 	unsigned long minimumAllocationSize;
 	unsigned long requestedSize;
 	unsigned long allocatedSize;
 	unsigned long lossByAllocator;
-	unsigned long blockNumber;		// number of segmented memory blocks
 };
 
 static void *SimpleMalloc(struct SimpleMemoryAllocatorContext *context,
@@ -18,27 +20,26 @@ static void *SimpleMalloc(struct SimpleMemoryAllocatorContext *context,
 	void *retval=0;
 	
 	if (context && size) {
-		unsigned long *blockTable=context->memoryPool;
 		int i;
 		int j;
 		unsigned long neededBlocks=(size+context->minimumAllocationSize-1)
 				/context->minimumAllocationSize;
 
 		for (i=0; i<context->blockNumber; i++) {
-			if (blockTable[i*2]==0) {	// not allocated
+			if (context->blockTable[i*2]==0) {	// not allocated
 				for (j=0; j<neededBlocks; j++) {
-					if (blockTable[(i+j)*2]) {	// allocated
+					if (context->blockTable[(i+j)*2]) {	// allocated
 						break;
 					}
 				}
 				if (j==neededBlocks) {
 					// allocate
 					for (j=0; j<neededBlocks; j++) {
-						blockTable[(i+j)*2]=i;
-						blockTable[(i+j)*2+1]=0;
+						context->blockTable[(i+j)*2]=i | 0x80000000;
+						context->blockTable[(i+j)*2+1]=0;
 					}
-					blockTable[i*2+1]=size;
-					retval=(unsigned char *)(blockTable+(context->blockNumber*2))+
+					context->blockTable[i*2+1]=size;
+					retval=(unsigned char *)(context->memoryBase)+
 							i*context->minimumAllocationSize;
 					context->requestedSize+=size;
 					context->allocatedSize+=
@@ -58,22 +59,22 @@ static MA_ERROR SimpleFree(struct SimpleMemoryAllocatorContext *context,
 	MA_ERROR retval=MA_INVALID_PARAM;
 
 	if (context && memory) {
-		unsigned long *blockTable=context->memoryPool;
 		int i;
 		int blockIndex;
 		int count;
 		
 		if (((unsigned long)memory)%4==0) {
 			blockIndex=((unsigned long)memory-
-					(unsigned long)(blockTable+context->blockNumber))/4;
-			if (blockTable[blockIndex]==blockIndex) {	// start of blocks
-				context->requestedSize-=blockTable[blockIndex*2+1];
+					(unsigned long)(context->blockTable+context->blockNumber*2))/
+					context->minimumAllocationSize;
+			if ((context->blockTable[blockIndex*2] & 0x7FFFFFFF)==blockIndex) {	// start of blocks
+				context->requestedSize-=context->blockTable[blockIndex*2+1];
 				count=0;
 				for (i=blockIndex; i<context->blockNumber; i++) {
-					if (blockTable[i*2]==blockIndex) {
+					if ((context->blockTable[i*2] & 0x7FFFFFFF)==blockIndex) {
 						count++;
-						blockTable[i*2]=0;
-						blockTable[i*2+1]=0;
+						context->blockTable[i*2]=0;
+						context->blockTable[i*2+1]=0;
 					} else {
 						break;
 					}
@@ -89,7 +90,7 @@ static unsigned long SimpleGetFreeMemorySize(
 		struct SimpleMemoryAllocatorContext *context) {
 	unsigned long retval=0;
 	if (context) {
-		retval=context->memoryPoolSize-context->lossByAllocator-context->allocatedSize;
+		retval=context->memoryPoolSize-context->lossByAllocator-context->allocatedSize;		
 	}
 	return retval;
 }
@@ -116,7 +117,28 @@ static unsigned long SimpleGetMaximumAvailableMemorySize(
 		struct SimpleMemoryAllocatorContext *context) {
 	unsigned long retval=0;
 	if (context) {
-		retval=0;
+		int i;
+		int j;
+		int count;
+		int maxCount;
+		
+		maxCount=0;
+		for (i=0; i<context->blockNumber; i++) {
+			if (context->blockTable[i*2]==0) {	// not allocated
+				count=1;
+				for (j=i+1; j<context->blockNumber; j++) {
+					if (context->blockTable[(i+j)*2]) {	// allocated
+						break;
+					}
+					count++;
+					if (count>maxCount) {
+						maxCount=count;
+					}
+				}
+				i=j;
+			}
+		}
+		retval=maxCount*context->minimumAllocationSize;
 	}
 	return retval;
 }
@@ -138,10 +160,11 @@ static MA_ERROR Simple_InitializeMemoryPool(void **context,
 			memset(temp,0,sizeof(struct SimpleMemoryAllocatorContext));
 			memset(memoryPool,0,memoryPoolSize);
 			temp->count=++contextCount;
-			remainder=(unsigned long)memoryPool%4;
-			temp->memoryPool=((unsigned char *)memoryPool)+remainder;
-			temp->lossByAllocator=remainder;
+			temp->memoryPool=memoryPool;
 			temp->memoryPoolSize=memoryPoolSize;
+			remainder=(unsigned long)memoryPool%4;
+			temp->blockTable=(unsigned long *)(((unsigned char *)memoryPool)+remainder);
+			temp->lossByAllocator=remainder;
 			if (minimumAllocationSize<128) {
 				minimumAllocationSize=128;
 			}
@@ -150,9 +173,10 @@ static MA_ERROR Simple_InitializeMemoryPool(void **context,
 			// +8 : requested size can be calculated
 			temp->blockNumber=
 					(memoryPoolSize-remainder)/(minimumAllocationSize+8);
+			temp->memoryBase=(unsigned char *)(temp->blockTable+temp->blockNumber*2);
 			temp->lossByAllocator+=(
-					(memoryPoolSize-remainder)-
-					temp->blockNumber*(minimumAllocationSize+8));
+					memoryPoolSize-remainder-
+					temp->blockNumber*minimumAllocationSize);
 			*context=temp;
 			retval=MA_NO_ERROR;
 		} else {

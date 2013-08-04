@@ -69,6 +69,8 @@ int main(int argc, void *argv[]) {
 				int i;
 				void *memory[10];
 				memset(memory,0,sizeof(void*)*10);
+				CheckFreeMemory(context);
+				CheckMaximumAvailableMemory(context);
 				for (i=0; i<10; i++) {
 					printf("\r\nMemory allocate %d\r\n",i);
 					retval=MA_AllocateMemory(context,600+i*100,&memory[i]);
