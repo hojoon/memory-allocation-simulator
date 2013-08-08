@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 #include "MemoryAllocatorApi.h"
+#include "TestSequences/testSequence001.h"
 
 void CheckRequestedMemory(void *context) {
 	if (context) {
@@ -64,40 +65,7 @@ int main(int argc, void *argv[]) {
 		memoryPoolSize=10*1024*1024;
 		memoryPool=(unsigned char *)MA_GeneralMalloc(memoryPoolSize);
 		if (memoryPool) {
-			retval=MA_InitializeMemoryPool(&context,memoryPool,memoryPoolSize,1024);
-			if (retval==MA_NO_ERROR) {
-				int i;
-				void *memory[10];
-				memset(memory,0,sizeof(void*)*10);
-				CheckFreeMemory(context);
-				CheckMaximumAvailableMemory(context);
-				for (i=0; i<10; i++) {
-					printf("\r\nMemory allocate %d\r\n",i);
-					retval=MA_AllocateMemory(context,600+i*100,&memory[i]);
-					if (retval!=MA_NO_ERROR) {
-						printf("\r\nAllocation error : %d\r\n",retval);
-						break;
-					}
-					CheckRequestedMemory(context);
-					CheckAllocatedMemory(context);
-					CheckFreeMemory(context);
-					CheckMaximumAvailableMemory(context);
-				}
-				for (i=0; i<10; i++) {
-					if (memory[i]) {
-						printf("\r\nMemory free %d\r\n",i);
-						retval=MA_FreeMemory(context,memory[i]);
-						if (retval!=MA_NO_ERROR) {
-							printf("memory free failed ...[%d]\r\n",retval);
-						}
-						CheckRequestedMemory(context);
-						CheckAllocatedMemory(context);
-						CheckFreeMemory(context);
-						CheckMaximumAvailableMemory(context);
-					}
-				}
-				MA_DeinitializeMemoryPool(context);
-			}
+            TestSequence001(memoryPool, memoryPoolSize, 1024);
 		} else {
 			retval=MA_SYSTEM_MEMORY_FULL;
 		}

@@ -19,3 +19,6 @@ main
 
 depend_file
 
+.DS_Store
+*.xcworkspacedata
+*.xcuserstate
