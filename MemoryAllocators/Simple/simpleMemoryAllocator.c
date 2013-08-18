@@ -20,8 +20,8 @@ static void *SimpleMalloc(struct SimpleMemoryAllocatorContext *context,
 	void *retval=0;
 	
 	if (context && size) {
-		int i;
-		int j;
+		unsigned long i;
+		unsigned long j;
 		unsigned long neededBlocks=(size+context->minimumAllocationSize-1)
 				/context->minimumAllocationSize;
 
@@ -32,7 +32,7 @@ static void *SimpleMalloc(struct SimpleMemoryAllocatorContext *context,
 						break;
 					}
 				}
-				if (j==neededBlocks) {
+				if ((j==neededBlocks) && ((i+j)<context->blockNumber)) {
 					// allocate
 					for (j=0; j<neededBlocks; j++) {
 						context->blockTable[(i+j)*2]=i | 0x80000000;
@@ -46,7 +46,7 @@ static void *SimpleMalloc(struct SimpleMemoryAllocatorContext *context,
 							neededBlocks*context->minimumAllocationSize;
 					break;
 				} else {
-					i=j;
+					i+=j;
 				}
 			}
 		}
@@ -90,7 +90,7 @@ static unsigned long SimpleGetFreeMemorySize(
 		struct SimpleMemoryAllocatorContext *context) {
 	unsigned long retval=0;
 	if (context) {
-		retval=context->memoryPoolSize-context->lossByAllocator-context->allocatedSize;		
+		retval=context->memoryPoolSize-context->lossByAllocator-context->allocatedSize;
 	}
 	return retval;
 }
@@ -144,7 +144,7 @@ static unsigned long SimpleGetMaximumAvailableMemorySize(
 }
 
 static unsigned long contextCount=0;
-
+#define SIMPLE_MALLOCATOR_MINIMUM_ALLOCATION_SIZE   32
 static MA_ERROR Simple_InitializeMemoryPool(void **context,
 		void *memoryPool, unsigned long memoryPoolSize,
 		unsigned long minimumAllocationSize) {
@@ -165,8 +165,8 @@ static MA_ERROR Simple_InitializeMemoryPool(void **context,
 			remainder=(unsigned long)memoryPool%4;
 			temp->blockTable=(unsigned long *)(((unsigned char *)memoryPool)+remainder);
 			temp->lossByAllocator=remainder;
-			if (minimumAllocationSize<128) {
-				minimumAllocationSize=128;
+			if (minimumAllocationSize<SIMPLE_MALLOCATOR_MINIMUM_ALLOCATION_SIZE) {
+				minimumAllocationSize=SIMPLE_MALLOCATOR_MINIMUM_ALLOCATION_SIZE;
 			}
 			temp->minimumAllocationSize=minimumAllocationSize;
 			// +4 : requested size cannot be maintained
