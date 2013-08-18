@@ -127,7 +127,7 @@ static unsigned long SimpleGetMaximumAvailableMemorySize(
 			if (context->blockTable[i*2]==0) {	// not allocated
 				count=1;
 				for (j=i+1; j<context->blockNumber; j++) {
-					if (context->blockTable[(i+j)*2]) {	// allocated
+					if (context->blockTable[j*2]) {	// allocated
 						break;
 					}
 					count++;
@@ -144,12 +144,11 @@ static unsigned long SimpleGetMaximumAvailableMemorySize(
 }
 
 static unsigned long contextCount=0;
-#define SIMPLE_MALLOCATOR_MINIMUM_ALLOCATION_SIZE   32
+#define SIMPLE_MALLOCATOR_MINIMUM_ALLOCATION_SIZE   16
 static MA_ERROR Simple_InitializeMemoryPool(void **context,
 		void *memoryPool, unsigned long memoryPoolSize,
 		unsigned long minimumAllocationSize) {
 	MA_ERROR retval=MA_INVALID_PARAM;
-	
 	if (context) {
 		struct SimpleMemoryAllocatorContext *temp;
 		
@@ -157,14 +156,20 @@ static MA_ERROR Simple_InitializeMemoryPool(void **context,
 				sizeof(struct SimpleMemoryAllocatorContext));
 		if (temp) {
 			int remainder;
+            unsigned long minAllocSize;
+            unsigned long maxBlockNum=memoryPoolSize/2/8;
 			memset(temp,0,sizeof(struct SimpleMemoryAllocatorContext));
 			memset(memoryPool,0,memoryPoolSize);
 			temp->count=++contextCount;
 			temp->memoryPool=memoryPool;
 			temp->memoryPoolSize=memoryPoolSize;
-			remainder=(unsigned long)memoryPool%4;
+			remainder=((unsigned long)memoryPool)%4;
 			temp->blockTable=(unsigned long *)(((unsigned char *)memoryPool)+remainder);
 			temp->lossByAllocator=remainder;
+            minAllocSize=memoryPoolSize/2/maxBlockNum;
+            if (minimumAllocationSize<minAllocSize) {
+                minimumAllocationSize=minAllocSize;
+            }
 			if (minimumAllocationSize<SIMPLE_MALLOCATOR_MINIMUM_ALLOCATION_SIZE) {
 				minimumAllocationSize=SIMPLE_MALLOCATOR_MINIMUM_ALLOCATION_SIZE;
 			}
@@ -253,9 +258,10 @@ static MA_ERROR Simple_GetTotalRequestedMemorySize(void *context, unsigned long 
 static MA_ERROR Simple_GetMaximumAvailableMemorySize(void *context, unsigned long *memorySize) {
 	MA_ERROR retval=MA_INVALID_PARAM;
 	
-	*memorySize=SimpleGetMaximumAvailableMemorySize(context);
-	retval=MA_NO_ERROR;
-	
+    if (memorySize) {
+        *memorySize=SimpleGetMaximumAvailableMemorySize(context);
+        retval=MA_NO_ERROR;
+    }
 	return retval;
 }
 
