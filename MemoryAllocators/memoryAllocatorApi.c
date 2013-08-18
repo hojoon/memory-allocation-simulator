@@ -267,3 +267,47 @@ MA_ERROR MA_Ioctl(unsigned long command, void *context,
 	}
 	return retval;
 }
+
+
+static unsigned char currentTitle[100]="";
+static unsigned char logEnabled=1;
+
+void MA_SetLogTitle(unsigned char *title) {
+    strcpy(currentTitle,title);
+}
+
+void MA_EnableLog(void) {
+    logEnabled=1;
+}
+
+void MA_DisableLog(void) {
+    logEnabled=0;
+}
+
+void MA_CheckMemory(void *context,unsigned char *string, unsigned char value) {
+	if (logEnabled && context) {
+		unsigned long totalRequestedSize=0;
+        unsigned long allocatedMemorySize=0;
+        unsigned long freeMemory=0;
+        unsigned long maximumAvailableSize=0;
+        
+		(void)MA_GetTotalRequestedMemorySize(context,&totalRequestedSize);
+		(void)MA_GetAllocatedMemorySize(context,&allocatedMemorySize);
+		(void)MA_GetFreeMemorySize(context,&freeMemory);
+		(void)MA_GetMaximumAvailableMemorySize(context,&maximumAvailableSize);
+        
+        printf("%s",currentTitle);
+        if (string) {
+            printf("%s\t: ",string);
+        }
+        if (value>0) {
+            printf("%03d\t: ",value);
+        }
+
+        printf("%8lu %8lu %8lu %8lu",totalRequestedSize, allocatedMemorySize,
+               freeMemory, maximumAvailableSize);
+        printf(" (%5.1f%%)\r\n",
+               (allocatedMemorySize)?(double)totalRequestedSize*100/allocatedMemorySize:0);
+	}
+}
+

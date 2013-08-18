@@ -14,7 +14,7 @@ include $(PROJ_ROOT)/includePre.mk
 LIB_NAME = TestSequences
 
 # list of library source files
-LIB_SRCS = testSequence001.c
+LIB_SRCS = testSequence001.c fixedSizeAllocationTest01.c
 
 # source files for application
 TARGET_SRCS = 

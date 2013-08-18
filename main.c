@@ -3,6 +3,7 @@
 
 #include "MemoryAllocatorApi.h"
 #include "TestSequences/testSequence001.h"
+#include "TestSequences/fixedSizeAllocationTest01.h"
 
 void CheckRequestedMemory(void *context) {
 	if (context) {
@@ -65,7 +66,10 @@ int main(int argc, void *argv[]) {
 		memoryPoolSize=10*1024*1024;
 		memoryPool=(unsigned char *)MA_GeneralMalloc(memoryPoolSize);
 		if (memoryPool) {
-            TestSequence001(memoryPool, memoryPoolSize, 1024);
+            retval=TestSequence001(memoryPool, memoryPoolSize, 16);
+            if (retval==MA_NO_ERROR) {
+                retval=FixedSizeAllocationTest01(memoryPool, memoryPoolSize, 16);
+            }
 		} else {
 			retval=MA_SYSTEM_MEMORY_FULL;
 		}

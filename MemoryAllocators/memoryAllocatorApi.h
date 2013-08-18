@@ -34,5 +34,10 @@ extern MA_ERROR MA_Ioctl(unsigned long command, void *context,
 extern void *MA_GeneralMalloc(unsigned long size);
 extern void MA_GeneralFree(void *memory);
 
+extern void MA_SetLogTitle(unsigned char *title);
+extern void MA_EnableLog(void);
+extern void MA_DisableLog(void);
+extern void MA_CheckMemory(void *context,unsigned char *string, unsigned char value);
+
 #endif	/* _MEMORY_ALLOCATOR_API_H_ */
 
