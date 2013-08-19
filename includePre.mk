@@ -12,7 +12,7 @@ OBJS_DIR = Release
 DBG_FLAG = -O2 -DNDEBUG
 else
 OBJS_DIR = Debug
-DBG_FLAG = -g -O0 -DDEBUG
+DBG_FLAGS = -g -O0 -DDEBUG
 endif
 
 DEPEND_FILE = $(OBJS_DIR)/depend_file
